@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.ScreenAdapter
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.graphics.g2d.BitmapFont // ←追加する
 import com.badlogic.gdx.graphics.g2d.Sprite
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.utils.viewport.FitViewport
@@ -17,7 +18,7 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         val CAMERA_WIDTH = 10f
         val CAMERA_HEIGHT = 15f
         val WORLD_WIDTH = 10f
-        val WORLD_HEIGHT = 15 * 2    // 20画面分登れば終了
+        val WORLD_HEIGHT = 15 * 20    // 20画面分登れば終了
         val GUI_WIDTH = 320f    // ←追加する
         val GUI_HEIGHT = 480f   // ←追加する
 
@@ -44,6 +45,9 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
     private var mGameState: Int
     private var mHeightSoFar: Float = 0f    // ←追加する
     private var mTouchPoint: Vector3    // ←追加する
+    private var mFont: BitmapFont   // ←追加する
+    private var mScore: Int // ←追加する
+    private var mHighScore: Int // ←追加する
 
     init {
         // 背景の準備
@@ -69,6 +73,12 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         mStars = ArrayList<Star>()
         mGameState = GAME_STATE_READY
         mTouchPoint = Vector3() // ←追加する
+
+        mFont = BitmapFont(Gdx.files.internal("font.fnt"), Gdx.files.internal("font.png"), false)   // ←追加する
+        mFont.data.setScale(0.8f)   // ←追加する
+        mScore = 0  // ←追加する
+        mHighScore = 0  // ←追加する
+
 
         createStage()
     }
@@ -113,6 +123,13 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         mPlayer.draw(mGame.batch)
 
         mGame.batch.end()
+
+        mGuiCamera.update() // ←追加する
+        mGame.batch.projectionMatrix = mGuiCamera.combined  // ←追加する
+        mGame.batch.begin() // ←追加する
+        mFont.draw(mGame.batch, "HighScore: $mHighScore", 16f, GUI_HEIGHT - 15) // ←追加する
+        mFont.draw(mGame.batch, "Score: $mScore", 16f, GUI_HEIGHT - 35)    // ←追加する
+        mGame.batch.end()   // ←追加する
     }
 
     override fun resize(width: Int, height: Int) {
@@ -206,6 +223,16 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
 
         // 当たり判定を行う
         checkCollision() // ←追加する
+
+        // ゲームオーバーか判断する
+        checkGameOver()
+    }
+
+    private fun checkGameOver() {
+        if (mHeightSoFar - CAMERA_HEIGHT / 2 > mPlayer.y) {
+            Gdx.app.log("JampActionGame", "GAMEOVER")
+            mGameState = GAME_STATE_GAMEOVER
+        }
     }
 
     private fun updateGameOver() {
@@ -229,6 +256,10 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
 
             if (mPlayer.boundingRectangle.overlaps(star.boundingRectangle)) {
                 star.get()
+                mScore++    // ←追加する
+                if (mScore > mHighScore) {  // ←追加する
+                    mHighScore = mScore     // ←追加する
+                }   // ←追加する
                 break
             }
         }
