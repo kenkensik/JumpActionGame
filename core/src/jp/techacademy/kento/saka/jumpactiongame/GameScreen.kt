@@ -17,7 +17,9 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         val CAMERA_WIDTH = 10f
         val CAMERA_HEIGHT = 15f
         val WORLD_WIDTH = 10f
-        val WORLD_HEIGHT = 15 * 20    // 20画面分登れば終了
+        val WORLD_HEIGHT = 15 * 2    // 20画面分登れば終了
+        val GUI_WIDTH = 320f    // ←追加する
+        val GUI_HEIGHT = 480f   // ←追加する
 
         val GAME_STATE_READY = 0
         val GAME_STATE_PLAYING = 1
@@ -29,7 +31,9 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
 
     private val mBg: Sprite
     private val mCamera: OrthographicCamera
+    private val mGuiCamera: OrthographicCamera  // ←追加する
     private val mViewPort: FitViewport
+    private val mGuiViewPort: FitViewport   // ←追加する
 
     private var mRandom: Random
     private var mSteps: ArrayList<Step>
@@ -54,6 +58,11 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         mCamera.setToOrtho(false, CAMERA_WIDTH, CAMERA_HEIGHT)
         mViewPort = FitViewport(CAMERA_WIDTH, CAMERA_HEIGHT, mCamera)
 
+        // GUI用のカメラを設定する
+        mGuiCamera = OrthographicCamera()   // ←追加する
+        mGuiCamera.setToOrtho(false, GUI_WIDTH, GUI_HEIGHT) // ←追加する
+        mGuiViewPort = FitViewport(GUI_WIDTH, GUI_HEIGHT, mGuiCamera)   // ←追加する
+
         // プロパティの初期化
         mRandom = Random()
         mSteps = ArrayList<Step>()
@@ -70,6 +79,11 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
 
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+
+        // カメラの中心を超えたらカメラを上に移動させる つまりキャラが画面の上半分には絶対に行かない
+        if (mPlayer.y > mCamera.position.y) { // ←追加する
+            mCamera.position.y = mPlayer.y // ←追加する
+        } // ←追加する
 
         // カメラの座標をアップデート（計算）し、スプライトの表示に反映させる
         mCamera.update()
@@ -103,6 +117,7 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
 
     override fun resize(width: Int, height: Int) {
         mViewPort.update(width, height)
+        mGuiViewPort.update(width, height)
     }
 
     // ステージを作成する
@@ -166,9 +181,9 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
     private fun updatePlaying(delta: Float) {
         var accel = 0f
         if (Gdx.input.isTouched) {
-            mViewPort.unproject(mTouchPoint.set(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f))
-            val left = Rectangle(0f, 0f, CAMERA_WIDTH / 2, CAMERA_HEIGHT)
-            val right = Rectangle(CAMERA_WIDTH / 2, 0f, CAMERA_WIDTH / 2, CAMERA_HEIGHT)
+            mGuiViewPort.unproject(mTouchPoint.set(Gdx.input.x.toFloat(), Gdx.input.y.toFloat(), 0f))   // ←修正する
+            val left = Rectangle(0f, 0f, GUI_WIDTH / 2, GUI_HEIGHT) // ←修正する
+            val right = Rectangle(GUI_WIDTH / 2, 0f, GUI_WIDTH / 2, GUI_HEIGHT)    // ←修正する
             if (left.contains(mTouchPoint.x, mTouchPoint.y)) {
                 accel = 5.0f
             }
