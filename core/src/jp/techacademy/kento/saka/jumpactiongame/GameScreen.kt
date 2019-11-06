@@ -243,7 +243,9 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
     }
 
     private fun updateGameOver() {
-
+        if (Gdx.input.justTouched()) {
+            mGame.screen = ResultScreen(mGame, mScore)
+        }
     }
 
     private fun checkCollision() {
