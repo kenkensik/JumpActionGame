@@ -53,6 +53,7 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
     private var mScore: Int // ←追加する
     private var mHighScore: Int // ←追加する
     private var mPrefs: Preferences
+    val sound:Sound = Gdx.audio.newSound(Gdx.files.internal("incorrect1.mp3"))
 
     init {
         // 背景の準備
@@ -261,7 +262,7 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
 
     private fun checkCollision() {
         //敵キャラとの当たり判定
-        val sound:Sound = Gdx.audio.newSound(Gdx.files.internal("incorrect1.mp3"))
+        //val sound:Sound = Gdx.audio.newSound(Gdx.files.internal("incorrect1.mp3"))
         if (mPlayer.boundingRectangle.overlaps(mEnemy.boundingRectangle)) {
             sound.play(1.0f)
             mGameState = GAME_STATE_GAMEOVER
