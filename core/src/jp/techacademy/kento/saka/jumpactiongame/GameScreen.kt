@@ -21,7 +21,7 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         val CAMERA_WIDTH = 10f
         val CAMERA_HEIGHT = 15f
         val WORLD_WIDTH = 10f
-        val WORLD_HEIGHT = 15 * 2    // 20画面分登れば終了
+        val WORLD_HEIGHT = 15 * 20    // 20画面分登れば終了
         val GUI_WIDTH = 320f    // ←追加する
         val GUI_HEIGHT = 480f   // ←追加する
 
@@ -44,7 +44,8 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
     private var mStars: ArrayList<Star>
     private lateinit var mUfo: Ufo
     private lateinit var mPlayer: Player
-    private lateinit var mEnemy: Enemy
+    //private lateinit var mEnemy: Enemy
+    private var mEnemy: ArrayList<Enemy>
 
     private var mGameState: Int
     private var mHeightSoFar: Float = 0f    // ←追加する
@@ -77,6 +78,7 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         mRandom = Random()
         mSteps = ArrayList<Step>()
         mStars = ArrayList<Star>()
+        mEnemy=ArrayList<Enemy>()
         mGameState = GAME_STATE_READY
         mTouchPoint = Vector3() // ←追加する
 
@@ -127,6 +129,10 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
             mStars[i].draw(mGame.batch)
         }
 
+        for (i in 0 until mEnemy.size) {
+            mEnemy[i].draw(mGame.batch)
+        }
+
         // UFO
         mUfo.draw(mGame.batch)
 
@@ -134,7 +140,7 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         mPlayer.draw(mGame.batch)
 
         //enemy
-        mEnemy.draw(mGame.batch)
+        //mEnemy.draw(mGame.batch)
 
         mGame.batch.end()
 
@@ -191,9 +197,15 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         mUfo = Ufo(ufoTexture, 0, 0, 120, 74)
         mUfo.setPosition(WORLD_WIDTH / 2 - Ufo.UFO_WIDTH / 2, y)
 
-        // ゴールのUFOを配置
-        mEnemy = Enemy(enemyEexture, 0, 0, 700, 900)
-        mEnemy.setPosition(WORLD_WIDTH / 2 - Enemy.ENEMY_WIDTH / 2, y/2)
+        var a=arrayOf(3,20,40,60,68,72,76)
+        // 敵の配置
+        for(i in 0 until 7) {
+            val enemy = Enemy(enemyEexture, 0, 0, 700, 900)
+            mEnemy.add(enemy)
+            mEnemy[i].setPosition(WORLD_WIDTH / 2 - Enemy.ENEMY_WIDTH / 2, y * a[i] / 80)
+        }
+
+
     }
 
     // それぞれのオブジェクトの状態をアップデートする
@@ -263,11 +275,14 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
     private fun checkCollision() {
         //敵キャラとの当たり判定
         //val sound:Sound = Gdx.audio.newSound(Gdx.files.internal("incorrect1.mp3"))
-        if (mPlayer.boundingRectangle.overlaps(mEnemy.boundingRectangle)) {
-            sound.play(1.0f)
-            mGameState = GAME_STATE_GAMEOVER
+        for(i in 0 until mEnemy.size) {
 
-            return
+            if (mPlayer.boundingRectangle.overlaps(mEnemy[i].boundingRectangle)) {
+                sound.play(1.0f)
+                mGameState = GAME_STATE_GAMEOVER
+
+                return
+            }
         }
 
         // UFO(ゴールとの当たり判定)
