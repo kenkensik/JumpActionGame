@@ -3,6 +3,7 @@ package jp.techacademy.kento.saka.jumpactiongame
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Preferences // ←追加する
 import com.badlogic.gdx.ScreenAdapter
+import com.badlogic.gdx.audio.Sound
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont // ←追加する
@@ -14,12 +15,13 @@ import com.badlogic.gdx.math.Vector3    // ←追加する
 import com.badlogic.gdx.graphics.OrthographicCamera
 import java.util.*
 
+
 class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
     companion object {
         val CAMERA_WIDTH = 10f
         val CAMERA_HEIGHT = 15f
         val WORLD_WIDTH = 10f
-        val WORLD_HEIGHT = 15 * 20    // 20画面分登れば終了
+        val WORLD_HEIGHT = 15 * 2    // 20画面分登れば終了
         val GUI_WIDTH = 320f    // ←追加する
         val GUI_HEIGHT = 480f   // ←追加する
 
@@ -42,6 +44,7 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
     private var mStars: ArrayList<Star>
     private lateinit var mUfo: Ufo
     private lateinit var mPlayer: Player
+    private lateinit var mEnemy: Enemy
 
     private var mGameState: Int
     private var mHeightSoFar: Float = 0f    // ←追加する
@@ -129,6 +132,9 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         //Player
         mPlayer.draw(mGame.batch)
 
+        //enemy
+        mEnemy.draw(mGame.batch)
+
         mGame.batch.end()
 
         mGuiCamera.update() // ←追加する
@@ -152,7 +158,8 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         val starTexture = Texture("star.png")
         val playerTexture = Texture("uma.png")
         val ufoTexture = Texture("ufo.png")
-
+        val enemyEexture=Texture("p220.png")
+        Sound sound = Gdx.audio.newSound(Gdx.files.internal("data/mysound.mp3"))
         // StepとStarをゴールの高さまで配置していく
         var y = 0f
 
@@ -182,6 +189,10 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         // ゴールのUFOを配置
         mUfo = Ufo(ufoTexture, 0, 0, 120, 74)
         mUfo.setPosition(WORLD_WIDTH / 2 - Ufo.UFO_WIDTH / 2, y)
+
+        // ゴールのUFOを配置
+        mEnemy = Enemy(enemyEexture, 0, 0, 700, 900)
+        mEnemy.setPosition(WORLD_WIDTH / 2 - Enemy.ENEMY_WIDTH / 2, y/2)
     }
 
     // それぞれのオブジェクトの状態をアップデートする
@@ -249,6 +260,14 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
     }
 
     private fun checkCollision() {
+        //敵キャラとの当たり判定
+        if (mPlayer.boundingRectangle.overlaps(mEnemy.boundingRectangle)) {
+
+            mGameState = GAME_STATE_GAMEOVER
+
+            return
+        }
+
         // UFO(ゴールとの当たり判定)
         if (mPlayer.boundingRectangle.overlaps(mUfo.boundingRectangle)) {
             mGameState = GAME_STATE_GAMEOVER
