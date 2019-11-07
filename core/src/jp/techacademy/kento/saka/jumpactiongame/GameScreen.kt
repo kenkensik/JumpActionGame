@@ -159,7 +159,7 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
         val playerTexture = Texture("uma.png")
         val ufoTexture = Texture("ufo.png")
         val enemyEexture=Texture("p220.png")
-        Sound sound = Gdx.audio.newSound(Gdx.files.internal("data/mysound.mp3"))
+
         // StepとStarをゴールの高さまで配置していく
         var y = 0f
 
@@ -261,8 +261,9 @@ class GameScreen(private val mGame: JumpActionGame) : ScreenAdapter() {
 
     private fun checkCollision() {
         //敵キャラとの当たり判定
+        val sound:Sound = Gdx.audio.newSound(Gdx.files.internal("incorrect1.mp3"))
         if (mPlayer.boundingRectangle.overlaps(mEnemy.boundingRectangle)) {
-
+            sound.play(1.0f)
             mGameState = GAME_STATE_GAMEOVER
 
             return
